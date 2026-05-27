@@ -12,14 +12,19 @@ const Coins = async ({ searchParams }: NextPageProps) => {
   const currentPage = Number(page) || 1;
   const perPage = 10;
 
-  const coinsData = await fetcher<CoinMarketData[]>('/coins/markets', {
-    vs_currency: 'usd',
-    order: 'market_cap_desc',
-    per_page: perPage,
-    page: currentPage,
-    sparkline: 'false',
-    price_change_percentage: '24h',
-  });
+  let coinsData: CoinMarketData[] = [];
+  try {
+    coinsData = await fetcher<CoinMarketData[]>('/coins/markets', {
+      vs_currency: 'usd',
+      order: 'market_cap_desc',
+      per_page: perPage,
+      page: currentPage,
+      sparkline: 'false',
+      price_change_percentage: '24h',
+    });
+  } catch (error) {
+    console.error('Error fetching coins data:', error);
+  }
 
   const columns: DataTableColumn<CoinMarketData>[] = [
     {

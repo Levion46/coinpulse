@@ -38,24 +38,35 @@ const DataTable = <T,>({
         </TableRow>
       </TableHeader>
       <TableBody>
-        {data.map((row, rowIndex) => (
-          <TableRow
-            key={rowKey(row, rowIndex)}
-            className={cn(
-              'overflow-hidden rounded-lg border-b border-purple-100/5 hover:bg-dark-400/30! relative',
-              bodyRowClassName,
-            )}
-          >
-            {columns.map((column, columnIndex) => (
-              <TableCell
-                key={columnIndex}
-                className={cn('py-4 first:pl-5 last:pr-5', bodyCellClassName, column.cellClassName)}
-              >
-                {column.cell(row, rowIndex)}
-              </TableCell>
-            ))}
+        {data.length === 0 ? (
+          <TableRow className="hover:bg-transparent!">
+            <TableCell
+              colSpan={columns.length}
+              className="text-center py-8 text-purple-100/60 font-medium"
+            >
+              No data available. Please check your API configuration or try again later.
+            </TableCell>
           </TableRow>
-        ))}
+        ) : (
+          data.map((row, rowIndex) => (
+            <TableRow
+              key={rowKey(row, rowIndex)}
+              className={cn(
+                'overflow-hidden rounded-lg border-b border-purple-100/5 hover:bg-dark-400/30! relative',
+                bodyRowClassName,
+              )}
+            >
+              {columns.map((column, columnIndex) => (
+                <TableCell
+                  key={columnIndex}
+                  className={cn('py-4 first:pl-5 last:pr-5', bodyCellClassName, column.cellClassName)}
+                >
+                  {column.cell(row, rowIndex)}
+                </TableCell>
+              ))}
+            </TableRow>
+          ))
+        )}
       </TableBody>
     </Table>
   );

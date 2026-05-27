@@ -2,6 +2,7 @@
   "name": "coinpulse",
   "version": "0.1.0",
   "private": true,
+  "description": "CoinPulse — Real-time crypto analytics dashboard with live charts, market data, and trading insights powered by CoinGecko.",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -19,6 +20,7 @@
     "lucide-react": "^0.562.0",
     "next": "16.1.0",
     "query-string": "^9.3.1",
+    "radix-ui": "^1.4.3",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "tailwind-merge": "^3.4.0"

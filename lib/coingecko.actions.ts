@@ -5,14 +5,15 @@ import qs from 'query-string';
 const BASE_URL = process.env.COINGECKO_BASE_URL;
 const API_KEY = process.env.COINGECKO_API_KEY;
 
-if (!BASE_URL) throw new Error('Could not get base url');
-if (!API_KEY) throw new Error('Could not get api key');
-
 export async function fetcher<T>(
   endpoint: string,
   params?: QueryParams,
   revalidate = 60,
 ): Promise<T> {
+  if (!BASE_URL) {
+    throw new Error('COINGECKO_BASE_URL is not configured.');
+  }
+
   const url = qs.stringifyUrl(
     {
       url: `${BASE_URL}/${endpoint}`,
@@ -71,3 +72,28 @@ export async function getPools(
     return fallback;
   }
 }
+
+export async function searchCoins(query: string): Promise<{ coins: SearchCoin[] }> {
+  if (!query) return { coins: [] };
+
+  try {
+    const response = await fetcher<{ coins: any[] }>('/search', { query });
+    const coins = (response.coins || []).map((coin) => ({
+      id: coin.id,
+      name: coin.name,
+      symbol: coin.symbol,
+      market_cap_rank: coin.market_cap_rank || null,
+      thumb: coin.thumb || coin.large || '',
+      large: coin.large || coin.thumb || '',
+      data: {
+        price: coin.data?.price,
+        price_change_percentage_24h: coin.data?.price_change_percentage_24h?.usd || 0,
+      },
+    }));
+    return { coins };
+  } catch (error) {
+    console.error('Error searching coins:', error);
+    return { coins: [] };
+  }
+}
+
