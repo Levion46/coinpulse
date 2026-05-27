@@ -184,4 +184,76 @@ export async function getWalletPortfolio(publicKey: string): Promise<any[]> {
   }
 }
 
+export async function getSolanaTokenDetails(mint: string): Promise<any | null> {
+  const rpcUrl = process.env.HELIUS_RPC_URL;
+  if (!rpcUrl) {
+    console.error('HELIUS_RPC_URL is not set.');
+    return null;
+  }
+
+  try {
+    const response = await fetch(rpcUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 'get-asset',
+        method: 'getAsset',
+        params: {
+          id: mint,
+        },
+      }),
+    });
+
+    const result = await response.json();
+    const asset = result.result;
+    if (!asset) return null;
+
+    const authorities = asset.authorities || [];
+    const mintAuthority = authorities.find((auth: any) => auth.scopes?.includes('admin'))?.address || null;
+    const isMutable = asset.mutable || false;
+
+    return {
+      mint: asset.id,
+      name: asset.content?.metadata?.name || 'Unknown Solana Token',
+      symbol: asset.content?.metadata?.symbol || 'UNKNOWN',
+      image: asset.content?.links?.image || asset.content?.files?.[0]?.uri || '',
+      isMutable,
+      mintAuthority,
+      freezeAuthority: asset.token_info?.freeze_authority || null,
+      supply: asset.token_info?.supply || 0,
+      decimals: asset.token_info?.decimals || 0,
+    };
+  } catch (error) {
+    console.error('Error fetching Solana token details via DAS:', error);
+    return null;
+  }
+}
+
+export async function getRugCheckReport(mint: string): Promise<any | null> {
+  try {
+    const response = await fetch(`https://api.rugcheck.xyz/v1/tokens/${mint}/report`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+      next: { revalidate: 300 },
+    });
+
+    if (!response.ok) {
+      console.warn(`RugCheck API returned status ${response.status}`);
+      return { score: -1, risks: [], warning: 'RugCheck API is currently rate-limited or unavailable.' };
+    }
+
+    const data = await response.json();
+    return {
+      score: data.score || 0,
+      risks: data.risks || [],
+      tokenType: data.tokenType || 'Unknown',
+    };
+  } catch (error) {
+    console.error('Error fetching RugCheck report:', error);
+    return { score: -1, risks: [], warning: 'Unable to establish connection to RugCheck.' };
+  }
+}
+
+
 
