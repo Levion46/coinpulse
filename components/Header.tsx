@@ -45,6 +45,15 @@ const Header = () => {
             All Coins
           </Link>
 
+          <Link
+            href="/sniper"
+            className={cn('nav-link', {
+              'is-active': pathname === '/sniper',
+            })}
+          >
+            Sniper
+          </Link>
+
           {connected && publicKey ? (
             <button
               onClick={() => setIsDrawerOpen(true)}

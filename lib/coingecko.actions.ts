@@ -292,5 +292,85 @@ export async function getSolanaPriorityFeeEstimate(accountKeys: string[]): Promi
   }
 }
 
+export async function getHeliusWebhooks(): Promise<any[]> {
+  const apiKey = process.env.HELIUS_API_KEY;
+  if (!apiKey || apiKey === 'your_helius_api_key_here') {
+    return [
+      {
+        webhookID: 'simulated-webhook-raydium-1',
+        webhookURL: 'https://coinpulse.app/api/webhook/sniper',
+        transactionTypes: ['Any'],
+        accountAddresses: ['675kPX9M4sg3aJ679yw1Wp6t6385Ua7778G3R6rL'],
+        webhookType: 'enhanced',
+      }
+    ];
+  }
+
+  try {
+    const res = await fetch(`https://api.helius.xyz/v0/webhooks?api-key=${apiKey}`);
+    if (!res.ok) {
+      throw new Error(`Helius API returned status ${res.status}`);
+    }
+    return await res.json();
+  } catch (error) {
+    console.error('Error fetching Helius webhooks:', error);
+    return [];
+  }
+}
+
+export async function createHeliusWebhook(webhookURL: string, accountAddresses: string[]): Promise<any> {
+  const apiKey = process.env.HELIUS_API_KEY;
+  if (!apiKey || apiKey === 'your_helius_api_key_here') {
+    return {
+      webhookID: `simulated-webhook-${Math.random().toString(36).substring(2, 9)}`,
+      webhookURL,
+      transactionTypes: ['Any'],
+      accountAddresses,
+      webhookType: 'enhanced',
+    };
+  }
+
+  try {
+    const res = await fetch(`https://api.helius.xyz/v0/webhooks?api-key=${apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        webhookURL,
+        transactionTypes: ['Any'],
+        accountAddresses,
+        webhookType: 'enhanced',
+      }),
+    });
+
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(`Helius API failed to create webhook: ${errText}`);
+    }
+
+    return await res.json();
+  } catch (error) {
+    console.error('Error creating Helius webhook:', error);
+    throw error;
+  }
+}
+
+export async function deleteHeliusWebhook(webhookId: string): Promise<boolean> {
+  const apiKey = process.env.HELIUS_API_KEY;
+  if (!apiKey || apiKey === 'your_helius_api_key_here' || webhookId.startsWith('simulated-')) {
+    return true;
+  }
+
+  try {
+    const res = await fetch(`https://api.helius.xyz/v0/webhooks/${webhookId}?api-key=${apiKey}`, {
+      method: 'DELETE',
+    });
+
+    return res.ok;
+  } catch (error) {
+    console.error('Error deleting Helius webhook:', error);
+    return false;
+  }
+}
+
 
 
