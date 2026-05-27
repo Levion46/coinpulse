@@ -7,6 +7,7 @@ import {
   TrendingCoinsFallback,
 } from '@/components/home/fallback';
 import Categories from '@/components/home/Categories';
+import HeliusTerminalLogs from '@/components/home/HeliusTerminalLogs';
 
 const Page = async () => {
   return (
@@ -25,9 +26,12 @@ const Page = async () => {
         <Suspense fallback={<CategoriesFallback />}>
           <Categories />
         </Suspense>
+
+        <HeliusTerminalLogs />
       </section>
     </main>
   );
 };
 
 export default Page;
+
