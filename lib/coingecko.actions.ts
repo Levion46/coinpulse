@@ -255,5 +255,42 @@ export async function getRugCheckReport(mint: string): Promise<any | null> {
   }
 }
 
+export async function getSolanaPriorityFeeEstimate(accountKeys: string[]): Promise<number> {
+  const rpcUrl = process.env.HELIUS_RPC_URL;
+  if (!rpcUrl) {
+    console.error('HELIUS_RPC_URL is not set.');
+    return 1000;
+  }
+
+  try {
+    const response = await fetch(rpcUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 'priority-fee-estimate',
+        method: 'getPriorityFeeEstimate',
+        params: [
+          {
+            accountKeys,
+            options: {
+              recommended: true,
+            },
+          },
+        ],
+      }),
+    });
+
+    const result = await response.json();
+    if (result.result?.priorityFeeEstimate) {
+      return Math.ceil(result.result.priorityFeeEstimate);
+    }
+    return 1000;
+  } catch (error) {
+    console.error('Error fetching priority fee estimate:', error);
+    return 1000;
+  }
+}
+
 
 

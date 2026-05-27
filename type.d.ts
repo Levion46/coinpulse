@@ -228,6 +228,8 @@ interface LiveDataProps {
   coin: CoinDetailsData;
   coinOHLCData?: OHLCData[];
   children?: React.ReactNode;
+  contractAddress?: string | null;
+  decimals?: number;
 }
 
 interface LiveCoinHeaderProps {

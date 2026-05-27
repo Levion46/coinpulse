@@ -7,8 +7,17 @@ import DataTable from '@/components/DataTable';
 import { formatCurrency, timeAgo } from '@/lib/utils';
 import { useState } from 'react';
 import CoinHeader from '@/components/CoinHeader';
+import SwapPanel from '@/components/SwapPanel';
 
-const LiveDataWrapper = ({ children, coinId, poolId, coin, coinOHLCData }: LiveDataProps) => {
+const LiveDataWrapper = ({
+  children,
+  coinId,
+  poolId,
+  coin,
+  coinOHLCData,
+  contractAddress = null,
+  decimals = 9
+}: LiveDataProps) => {
   const [liveInterval, setLiveInterval] = useState<'1s' | '1m'>('1s');
   const { trades, ohlcv, price } = useCoinGeckoWebSocket({ coinId, poolId, liveInterval });
 
@@ -58,18 +67,30 @@ const LiveDataWrapper = ({ children, coinId, poolId, coin, coinOHLCData }: LiveD
       />
       <Separator className="divider" />
 
-      <div className="trend">
-        <CandlestickChart
-          coinId={coinId}
-          data={coinOHLCData}
-          liveOhlcv={ohlcv}
-          mode="live"
-          initialPeriod="daily"
-          liveInterval={liveInterval}
-          setLiveInterval={setLiveInterval}
-        >
-          <h4>Trend Overview</h4>
-        </CandlestickChart>
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 items-start">
+        <div className="xl:col-span-2 trend">
+          <CandlestickChart
+            coinId={coinId}
+            data={coinOHLCData}
+            liveOhlcv={ohlcv}
+            mode="live"
+            initialPeriod="daily"
+            liveInterval={liveInterval}
+            setLiveInterval={setLiveInterval}
+          >
+            <h4>Trend Overview</h4>
+          </CandlestickChart>
+        </div>
+
+        <div className="xl:col-span-1">
+          <SwapPanel
+            coinName={coin.name}
+            coinSymbol={coin.symbol}
+            coinImage={coin.image.small}
+            contractAddress={contractAddress}
+            decimals={decimals}
+          />
+        </div>
       </div>
 
       <Separator className="divider" />
