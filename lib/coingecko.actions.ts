@@ -97,3 +97,91 @@ export async function searchCoins(query: string): Promise<{ coins: SearchCoin[] 
   }
 }
 
+export async function getSolBalance(publicKey: string): Promise<number> {
+  const rpcUrl = process.env.HELIUS_RPC_URL;
+  if (!rpcUrl) {
+    console.error('HELIUS_RPC_URL is not set.');
+    return 0;
+  }
+
+  try {
+    const response = await fetch(rpcUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 'get-balance',
+        method: 'getBalance',
+        params: [publicKey],
+      }),
+    });
+
+    const result = await response.json();
+    const lamports = result.result?.value || 0;
+    return lamports / 1000000000;
+  } catch (error) {
+    console.error('Error fetching SOL balance:', error);
+    return 0;
+  }
+}
+
+export async function getWalletPortfolio(publicKey: string): Promise<any[]> {
+  const rpcUrl = process.env.HELIUS_RPC_URL;
+  if (!rpcUrl) {
+    console.error('HELIUS_RPC_URL is not set.');
+    return [];
+  }
+
+  try {
+    const response = await fetch(rpcUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 'get-assets',
+        method: 'getAssetsByOwner',
+        params: {
+          ownerAddress: publicKey,
+          page: 1,
+          limit: 100,
+          displayOptions: {
+            showFungible: true,
+          },
+        },
+      }),
+    });
+
+    const result = await response.json();
+    const items = result.result?.items || [];
+    
+    return items
+      .filter((item: any) => item.interface === 'FungibleToken' || item.interface === 'FungibleAsset')
+      .map((item: any) => {
+        const symbol = item.content?.metadata?.symbol || 'UNKNOWN';
+        const name = item.content?.metadata?.name || 'Unknown Token';
+        const image = item.content?.links?.image || item.content?.files?.[0]?.uri || '';
+        const decimals = item.token_info?.decimals || 0;
+        const balanceLamports = item.token_info?.balance || 0;
+        const balance = balanceLamports / Math.pow(10, decimals);
+        const price = item.token_info?.price_info?.price_per_token || 0;
+        const valueUsd = balance * price;
+
+        return {
+          mint: item.id,
+          symbol,
+          name,
+          image,
+          decimals,
+          balance,
+          price,
+          valueUsd,
+        };
+      })
+      .filter((token: any) => token.balance > 0);
+  } catch (error) {
+    console.error('Error fetching wallet portfolio:', error);
+    return [];
+  }
+}
+
+
